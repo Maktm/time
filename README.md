@@ -1,8 +1,7 @@
 # time
-`time` is a tool for measuring the execution speed of commands on Windows similar to
-the UNIX `time` program.
-
-![GitHub Logo](/assets/time_example.gif)
+<p align="center">
+  <img src="/assets/time_example.gif">
+</p>
 
 # Usage
 The general syntax is:
