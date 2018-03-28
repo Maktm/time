@@ -1,4 +1,8 @@
 # time
+`time` is a tool for measuring the execution speed of commands on Windows similar to
+the UNIX `time` program. It currently supports printing the duration for the execution
+of a program in a `minute:second:millisecond:microsecond` format.
+
 <p align="center">
   <img src="/assets/time_example.gif">
 </p>
