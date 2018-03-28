@@ -1,2 +1,28 @@
 # time
-Semi-UNIX-like time command for Windows
+`time` is a tool for measuring the execution speed of commands on Windows similar to
+the UNIX `time` program.
+
+![GitHub Logo](/assets/time_example.gif)
+
+# Usage
+The general syntax is:
+
+    time [options] <args>
+    
+`<args>` can be anything that can be executed as a command from within the environment
+you're running `time` from. Output from the `<args>` command is disabled by default but
+you can enable it using the `[-s | --show-output]` flags.
+
+# TODO
+* Add more output formatting options
+* Test cross-compiler compatibility (gcc, clang etc.)
+
+# Author
+[Michael Kiros](http://github.com/michaelkiros)
+
+# Credits
+A big thank you to the contributors of UNIX's time command but mainly the following people:
+
+* David Keppel
+* David MacKenzie
+* Assaf Gordon
