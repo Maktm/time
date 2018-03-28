@@ -34,7 +34,7 @@
 
 #include <windows.h>
 
-#include "io.h"
+#include "io_state.h"
 #include "version.h"
 
 IO_STATE io_state;

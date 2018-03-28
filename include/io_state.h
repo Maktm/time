@@ -22,42 +22,25 @@
 * THE SOFTWARE.
 */
 
-#ifdef _MSC_VER
-// Disables "unsafe" MSVC warnings.
-#define _CRT_SECURE_NO_WARNINGS
+#ifndef TIME_IO_STATE_H
+#define TIME_IO_STATE_H
+
+typedef struct
+{
+	int stdout_state;
+	int stderr_state;
+	int stored;
+}IO_STATE;
+
+void store_io_state(IO_STATE* state);
+void restore_io_state(IO_STATE* state);
+void disable_io(IO_STATE* state);
+void enable_io(IO_STATE* state);
+
+/**
+ * The original I/O state of the process used as
+ * a backup when disabling/enabling input/output.
+ */
+extern IO_STATE io_state;
+
 #endif
-
-#include <io.h>
-#include <stdio.h>
-
-#include "io.h"
-
-#define IO_STDOUT 1
-#define IO_STDERR 2
-
-void store_io_state(IO_STATE* state)
-{
-	state->stdout_state = _dup(IO_STDOUT);
-	state->stderr_state = _dup(IO_STDERR);
-	state->stored = 1;
-}
-
-void restore_io_state(IO_STATE* state)
-{
-	if (state->stored) {
-		_dup2(state->stdout_state, IO_STDOUT);
-		_dup2(state->stderr_state, IO_STDERR);
-	}
-}
-
-void disable_io(IO_STATE* state)
-{
-	store_io_state(state);
-	freopen("nul", "w", stdout);
-	freopen("nul", "w", stderr);
-}
-
-void enable_io(IO_STATE* state)
-{
-	restore_io_state(state);
-}
