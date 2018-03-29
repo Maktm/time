@@ -49,6 +49,8 @@ typedef struct
 	LARGE_INTEGER time_started;
 	LARGE_INTEGER time_ended;
 	double frequency;
+	double kernel_time;
+	double user_time;
 	int running;
 } STATS;
 
@@ -69,11 +71,13 @@ void version()
 	exit(EXIT_SUCCESS);
 }
 
-void execute_child_and_wait(wchar_t* runnable_command)
+void execute_child_and_wait(wchar_t* runnable_command, STATS* stats)
 {
 	BOOL success;
 	STARTUPINFOW si;
 	PROCESS_INFORMATION pi;
+	SYSTEMTIME system_time;
+	FILETIME creation, exited, kernel, user;
 
 	memset(&si, 0, sizeof(si));
 	memset(&pi, 0, sizeof(pi));
@@ -94,6 +98,19 @@ void execute_child_and_wait(wchar_t* runnable_command)
 	);
 
 	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	if (!GetProcessTimes(pi.hProcess, &creation, &exited, &kernel, &user)) {
+		// DANGER: We can't print an error from here because
+		// we might have already disabled the output. Instead,
+		// a quick exit like this will be easy to debug.
+		assert(0);
+	}
+
+	FileTimeToSystemTime(&kernel, &system_time);
+	stats->kernel_time = system_time.wMilliseconds;
+
+	FileTimeToSystemTime(&user, &system_time);
+	stats->user_time = system_time.wMilliseconds;
 
 	if (!success) {
 		fprintf(stderr, "Fatal error: failed to execute child process\n");
@@ -165,10 +182,18 @@ void print_stats(STATS* stats)
 	second = millisecond / 1000;
 	minute = second / 60;
 
-	printf("%02ldm:%02lds:%02ldms\n",
+	printf("wall:\t%02ldm:%02lds:%02ldms\n"
+		     "user:\t%02ldm:%02lds:%02ldms\n"
+		     "kernel:\t%02ldm:%02lds:%02ldms\n",
 		(long int)minute,
 		(long int)second,
-		(long int)millisecond);
+		(long int)millisecond,
+		(long int)stats->user_time / (1000 * 60),
+		(long int)stats->user_time / 1000,
+	  (long int)stats->user_time,
+		(long int)stats->kernel_time / (1000 * 60),
+		(long int)stats->kernel_time / 1000,
+		(long int)stats->kernel_time);
 }
 
 int wmain(int argc, wchar_t** argv)
@@ -207,7 +232,7 @@ int wmain(int argc, wchar_t** argv)
 	memset(&stats, 0, sizeof(stats));
 	start_stats_test(&stats);
 
-	execute_child_and_wait(runnable_cmd);
+	execute_child_and_wait(runnable_cmd, &stats);
 
 	end_stats_test(&stats);
 
