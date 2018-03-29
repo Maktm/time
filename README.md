@@ -17,7 +17,7 @@ you're running `time` from. Output from the `<args>` command is disabled by defa
 you can enable it using the `[-s | --show-output]` flags.
 
 # TODO
-* Add more output formatting options
+* Dynamically change the output format depending on the duration (e.g. no m in m:s:ms if duration < 60 minutes)
 * Test cross-compiler compatibility (gcc, clang etc.)
 
 # Author
