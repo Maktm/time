@@ -54,6 +54,20 @@ typedef struct
 	int running;
 } STATS;
 
+typedef struct
+{
+	int minute;
+	int second;
+	int millisecond;
+} DURATION;
+
+void millisecond_to_duration(double ms, DURATION* duration)
+{
+	duration->minute = (int)ms / (1000 * 60);
+	duration->second = ((int)ms % (1000 * 60)) / 1000;
+	duration->millisecond = ((int)ms % (1000 * 60)) % 1000;
+}
+
 void usage()
 {
 	fprintf(stderr,
@@ -140,7 +154,7 @@ void create_runnable_command(int argc, wchar_t** argv, int start, wchar_t* runna
 
 void start_stats_test(STATS* stats)
 {
-#define MICROSECOND_FREQUENCY 1000000.0
+#define MILLISECOND_FREQUENCY 1000.0
 
 	LARGE_INTEGER freq;
 
@@ -152,7 +166,7 @@ void start_stats_test(STATS* stats)
 		assert(0);
 	}
 
-	stats->frequency = (double)(freq.QuadPart) / MICROSECOND_FREQUENCY;
+	stats->frequency = (double)(freq.QuadPart) / MILLISECOND_FREQUENCY;
 	stats->running = 1;
 	QueryPerformanceCounter(&stats->time_started);
 
@@ -169,31 +183,30 @@ void end_stats_test(STATS* stats)
 
 void print_stats(STATS* stats)
 {
-	double minute, second, millisecond, microsecond;
-
-	minute = second = millisecond = microsecond = 0.0;
+	DURATION wall_duration, user_duration, kernel_duration;
+	double wall_ms, user_ms, kernel_ms;
 
 	LARGE_INTEGER* began = &stats->time_started;
 	LARGE_INTEGER* ended = &stats->time_ended;
-	microsecond =
+	wall_ms =
 		(double)(ended->QuadPart - began->QuadPart) / stats->frequency;
 
-	millisecond = microsecond / 1000;
-	second = millisecond / 1000;
-	minute = second / 60;
+	millisecond_to_duration(wall_ms, &wall_duration);
+	millisecond_to_duration(stats->user_time, &user_duration);
+	millisecond_to_duration(stats->kernel_time, &kernel_duration);
 
 	printf("wall:\t%02ldm:%02lds:%02ldms\n"
 		     "user:\t%02ldm:%02lds:%02ldms\n"
 		     "kernel:\t%02ldm:%02lds:%02ldms\n",
-		(long int)minute,
-		(long int)second,
-		(long int)millisecond,
-		(long int)stats->user_time / (1000 * 60),
-		(long int)stats->user_time / 1000,
-	  (long int)stats->user_time,
-		(long int)stats->kernel_time / (1000 * 60),
-		(long int)stats->kernel_time / 1000,
-		(long int)stats->kernel_time);
+		(long int)wall_duration.minute,
+		(long int)wall_duration.second,
+		(long int)wall_duration.millisecond,
+		(long int)user_duration.minute,
+		(long int)user_duration.second,
+	  (long int)user_duration.millisecond,
+		(long int)kernel_duration.minute,
+		(long int)kernel_duration.second,
+		(long int)kernel_duration.millisecond);
 }
 
 int wmain(int argc, wchar_t** argv)
