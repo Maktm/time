@@ -99,6 +99,9 @@ void execute_child_and_wait(wchar_t* runnable_command)
 		fprintf(stderr, "Fatal error: failed to execute child process\n");
 		exit(EXIT_FAILURE);
 	}
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 }
 
 void create_runnable_command(int argc, wchar_t** argv, int start, wchar_t* runnable_cmd)
