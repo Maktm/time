@@ -85,6 +85,35 @@ void version()
 	exit(EXIT_SUCCESS);
 }
 
+void start_stats_test(STATS* stats)
+{
+#define MILLISECOND_FREQUENCY 1000.0
+
+	LARGE_INTEGER freq;
+
+	if (!QueryPerformanceFrequency(&freq))
+	{
+		// DANGER: We can't print an error from here because
+		// we might have already disabled the output. Instead,
+		// a quick exit like this will be easy to debug.
+		assert(0);
+	}
+
+	stats->frequency = (double)(freq.QuadPart) / MILLISECOND_FREQUENCY;
+	stats->running = 1;
+	QueryPerformanceCounter(&stats->time_started);
+
+#undef MICROSECOND_FREQUENCY
+}
+
+void end_stats_test(STATS* stats)
+{
+	if (stats->running) {
+		QueryPerformanceCounter(&stats->time_ended);
+		stats->running = 0;
+	}
+}
+
 void execute_child_and_wait(wchar_t* runnable_command, STATS* stats)
 {
 	BOOL success;
@@ -97,6 +126,9 @@ void execute_child_and_wait(wchar_t* runnable_command, STATS* stats)
 	memset(&pi, 0, sizeof(pi));
 
 	si.cb = sizeof(si);
+
+	memset(stats, 0, sizeof(*stats));
+	start_stats_test(stats);
 
 	success = CreateProcessW(
 		NULL,
@@ -112,6 +144,8 @@ void execute_child_and_wait(wchar_t* runnable_command, STATS* stats)
 	);
 
 	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	end_stats_test(stats);
 
 	if (!GetProcessTimes(pi.hProcess, &creation, &exited, &kernel, &user)) {
 		// DANGER: We can't print an error from here because
@@ -149,35 +183,6 @@ void create_runnable_command(int argc, wchar_t** argv, int start, wchar_t* runna
 		wcscat(runnable_cmd, L" ");
 
 		index++;
-	}
-}
-
-void start_stats_test(STATS* stats)
-{
-#define MILLISECOND_FREQUENCY 1000.0
-
-	LARGE_INTEGER freq;
-
-	if (!QueryPerformanceFrequency(&freq))
-	{
-		// DANGER: We can't print an error from here because
-		// we might have already disabled the output. Instead,
-		// a quick exit like this will be easy to debug.
-		assert(0);
-	}
-
-	stats->frequency = (double)(freq.QuadPart) / MILLISECOND_FREQUENCY;
-	stats->running = 1;
-	QueryPerformanceCounter(&stats->time_started);
-
-#undef MICROSECOND_FREQUENCY
-}
-
-void end_stats_test(STATS* stats)
-{
-	if (stats->running) {
-		QueryPerformanceCounter(&stats->time_ended);
-		stats->running = 0;
 	}
 }
 
@@ -247,12 +252,7 @@ int wmain(int argc, wchar_t** argv)
 	memset(runnable_cmd, 0, BUFSIZ);
 	create_runnable_command(argc, argv, i, runnable_cmd);
 
-	memset(&stats, 0, sizeof(stats));
-	start_stats_test(&stats);
-
 	execute_child_and_wait(runnable_cmd, &stats);
-
-	end_stats_test(&stats);
 
 	if (!popts.show_output)
 		enable_io(&io_state);
