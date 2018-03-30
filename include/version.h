@@ -32,6 +32,6 @@
 
 #define TIME_VER_MAJOR 0
 #define TIME_VER_MINOR 1
-#define TIME_VER_PATCH 1
+#define TIME_VER_PATCH 2
 
 #endif

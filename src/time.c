@@ -181,10 +181,24 @@ void end_stats_test(STATS* stats)
 	}
 }
 
+void print_formatted_time(char duration_type[], DURATION* duration)
+{
+	printf("%s:\t", duration_type);
+
+	if (duration->minute > 0)
+		printf("%02ldm:", duration->minute);
+
+	if (duration->second > 0)
+		printf("%02lds:", duration->second);
+
+	printf("%02ldms\n", duration->millisecond);
+}
+
 void print_stats(STATS* stats)
 {
 	DURATION wall_duration, user_duration, kernel_duration;
 	double wall_ms, user_ms, kernel_ms;
+	char output_format[BUFSIZ];
 
 	LARGE_INTEGER* began = &stats->time_started;
 	LARGE_INTEGER* ended = &stats->time_ended;
@@ -195,18 +209,9 @@ void print_stats(STATS* stats)
 	millisecond_to_duration(stats->user_time, &user_duration);
 	millisecond_to_duration(stats->kernel_time, &kernel_duration);
 
-	printf("wall:\t%02ldm:%02lds:%02ldms\n"
-		     "user:\t%02ldm:%02lds:%02ldms\n"
-		     "kernel:\t%02ldm:%02lds:%02ldms\n",
-		(long int)wall_duration.minute,
-		(long int)wall_duration.second,
-		(long int)wall_duration.millisecond,
-		(long int)user_duration.minute,
-		(long int)user_duration.second,
-	  (long int)user_duration.millisecond,
-		(long int)kernel_duration.minute,
-		(long int)kernel_duration.second,
-		(long int)kernel_duration.millisecond);
+	print_formatted_time("wall", &wall_duration);
+	print_formatted_time("user", &user_duration);
+	print_formatted_time("kernel", &kernel_duration);
 }
 
 int wmain(int argc, wchar_t** argv)
