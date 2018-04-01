@@ -18,6 +18,7 @@ you can enable it using the `[-s | --show-output]` flags.
 
 # TODO
 * Test cross-compiler compatibility (gcc, clang etc.)
+* Update GIF showcasing latest version
 
 # Author
 [Michael Kiros](http://github.com/michaelkiros)
