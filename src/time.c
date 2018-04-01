@@ -71,7 +71,7 @@ void millisecond_to_duration(double ms, DURATION* duration)
 void usage()
 {
 	fprintf(stderr,
-		"usage: time [-v | --version] [-h | --help] [-s | --show-output]\n"
+		"usage: time [-v | --version] [-h | --help] [-d | --disable-output]\n"
 		"\t    [<args>]\n");
 	exit(EXIT_FAILURE);
 }
@@ -202,8 +202,7 @@ void print_formatted_time(char duration_type[], DURATION* duration)
 void print_stats(STATS* stats)
 {
 	DURATION wall_duration, user_duration, kernel_duration;
-	double wall_ms, user_ms, kernel_ms;
-	char output_format[BUFSIZ];
+	double wall_ms;
 
 	LARGE_INTEGER* began = &stats->time_started;
 	LARGE_INTEGER* ended = &stats->time_ended;
@@ -232,6 +231,7 @@ int wmain(int argc, wchar_t** argv)
 
 	memset(&io_state, 0, sizeof(io_state));
 	memset(&popts, 0, sizeof(popts));
+	popts.show_output = 1;
 	for (i = 1; i < argc && argv[i][0] == L'-'; i++) {
 		if (!wcscmp(argv[i], L"--version") || !wcscmp(argv[i], L"-v"))
 			version();
@@ -239,8 +239,8 @@ int wmain(int argc, wchar_t** argv)
 		if (!wcscmp(argv[i], L"--help") || !wcscmp(argv[i], L"-h"))
 			usage();
 
-		if (!wcscmp(argv[i], L"--show-output") || !wcscmp(argv[i], L"-s"))
-			popts.show_output = 1;
+		if (!wcscmp(argv[i], L"--disable-output") || !wcscmp(argv[i], L"-d"))
+			popts.show_output = 0;
 	}
 
 	if (i == argc)
